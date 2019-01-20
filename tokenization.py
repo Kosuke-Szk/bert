@@ -22,6 +22,7 @@ import collections
 import unicodedata
 import six
 import tensorflow as tf
+import sentencepiece as spm
 
 
 def convert_to_unicode(text):
@@ -110,11 +111,10 @@ def whitespace_tokenize(text):
 class FullTokenizer(object):
   """Runs end-to-end tokenziation."""
 
-  def __init__(self, vocab_file, do_lower_case=True):
+  def __init__(self, model_file, vocab_file, do_lower_case=True):
+    self.tokenizer = SentencePieceTokenizer(model_file)
     self.vocab = load_vocab(vocab_file)
-    self.inv_vocab = {v: k for k, v in self.vocab.items()}
-    self.basic_tokenizer = BasicTokenizer(do_lower_case=do_lower_case)
-    self.wordpiece_tokenizer = WordpieceTokenizer(vocab=self.vocab)
+      self.inv_vocab = {v: k for k, v in self.vocab.items()}
 
   def tokenize(self, text):
     split_tokens = []
@@ -307,6 +307,24 @@ class WordpieceTokenizer(object):
         output_tokens.extend(sub_tokens)
     return output_tokens
 
+class SentencePieceTokenizer(object):
+  """Runs SentencePiece tokenization (from raw text to tokens list)"""
+
+  def __init__(self, model_file=None, do_lower_case=True):
+    """Constructs a SentencePieceTokenizer"""
+      self.tokenizer = spm.SentencePieceProcessor()
+      if self.tokenizer.Load(model_file):
+        print("Loader a trained SentencePiece model.")
+      else:
+        print("You have to set the path to a trained SentencePiece model.")
+        sys.exit(1)
+      self.do_lower_case = do_lower_case
+
+  def tokenize(self, text):
+    """Tokenizes a piece of text."""
+    text = convert_to_unicode(text)
+    output_tokens = self.tokenizer.EncodeAsPieces(text)
+    return output_tokens
 
 def _is_whitespace(char):
   """Checks whether `chars` is a whitespace character."""
