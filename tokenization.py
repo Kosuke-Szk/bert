@@ -86,6 +86,7 @@ def load_vocab(vocab_file):
 def convert_by_vocab(vocab, items):
   """Converts a sequence of [tokens|ids] using the vocab."""
   output = []
+  print(items)
   for item in items:
     output.append(vocab[item])
   return output
@@ -114,14 +115,10 @@ class FullTokenizer(object):
   def __init__(self, model_file, vocab_file, do_lower_case=True):
     self.tokenizer = SentencePieceTokenizer(model_file)
     self.vocab = load_vocab(vocab_file)
-      self.inv_vocab = {v: k for k, v in self.vocab.items()}
+    self.inv_vocab = {v: k for k, v in self.vocab.items()}
 
   def tokenize(self, text):
-    split_tokens = []
-    for token in self.basic_tokenizer.tokenize(text):
-      for sub_token in self.wordpiece_tokenizer.tokenize(token):
-        split_tokens.append(sub_token)
-
+    split_tokens = self.tokenizer.tokenize(text)
     return split_tokens
 
   def convert_tokens_to_ids(self, tokens):
@@ -311,14 +308,14 @@ class SentencePieceTokenizer(object):
   """Runs SentencePiece tokenization (from raw text to tokens list)"""
 
   def __init__(self, model_file=None, do_lower_case=True):
-    """Constructs a SentencePieceTokenizer"""
-      self.tokenizer = spm.SentencePieceProcessor()
-      if self.tokenizer.Load(model_file):
-        print("Loader a trained SentencePiece model.")
-      else:
-        print("You have to set the path to a trained SentencePiece model.")
-        sys.exit(1)
-      self.do_lower_case = do_lower_case
+    """Constructs a SentencePieceTokenizer."""
+    self.tokenizer = spm.SentencePieceProcessor()
+    if self.tokenizer.Load(model_file):
+      print("Loaded a trained SentencePiece model.")
+    else:
+      print("You have to set the path to a trained SentencePiece model.")
+      sys.exit(1)
+    self.do_lower_case = do_lower_case
 
   def tokenize(self, text):
     """Tokenizes a piece of text."""
